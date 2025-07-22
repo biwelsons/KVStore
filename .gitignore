@@ -1,1 +1,7 @@
 *.class
+
+/out/
+/bin/
+/target/
+/.idea/
+/.vscode/
