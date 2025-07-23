@@ -4,8 +4,8 @@ import java.net.*;
 import java.util.*;
 
 /*
- * Projeto SD: ClienteX — Key-Value Store Distribuído
- * Funcionalidades conforme SEÇÃO 4 do enunciado.
+ * Projeto SD: ClienteX — Key-Value Store Distribuido
+ * Funcionalidades conforme SECAO 4 do enunciado.
  */
 public class Cliente {
     private static final Scanner scanner = new Scanner(System.in);
@@ -15,10 +15,10 @@ public class Cliente {
     // Lista de servidores conhecidos pelo cliente (capturada via INIT, item 4a)
     private static List<InetSocketAddress> servidores = new ArrayList<>();
 
-    // Mapa de timestamps por chave para garantir consistência (item 4c)
+    // Mapa de timestamps por chave para garantir consistencia (item 4c)
     private static Map<String, Long> timestamps = new HashMap<>();
 
-    // Porta do cliente para escutar respostas assíncronas (item 4c)
+    // Porta do cliente para escutar respostas assincronas (item 4c)
     private static int portaCliente = 0;
 
     public static void main(String[] args) throws UnsupportedEncodingException {
@@ -26,7 +26,7 @@ public class Cliente {
             // Garante UTF-8 no terminal (opcional)
             System.setOut(new PrintStream(System.out, true, "UTF-8"));
 
-            // Menu interativo obrigatório — 4a (apenas INIT, PUT, GET)
+            // Menu interativo obrigatorio — 4a (apenas INIT, PUT, GET)
             System.out.println("\nEscolha uma opcao:");
             System.out.println("1 - INIT (inicializar cliente)");
             System.out.println("2 - PUT (inserir key-value)");
@@ -36,13 +36,13 @@ public class Cliente {
 
             switch (opcao) {
                 case "1":
-                    initCliente(); // SEÇÃO 4a: Inicialização
+                    initCliente(); // SECAO 4a: Inicializacao
                     break;
                 case "2":
-                    put(); // SEÇÃO 4b: PUT
+                    put(); // SECAO 4b: PUT
                     break;
                 case "3":
-                    get(); // SEÇÃO 4c: GET
+                    get(); // SECAO 4c: GET
                     break;
                 default:
                     System.out.println("Opcao invalida.");
@@ -50,11 +50,7 @@ public class Cliente {
         }
     }
 
-    /*
-     * SEÇÃO 4a: Inicialização do cliente
-     * - O cliente captura do teclado os IPs e portas dos três servidores
-     * - Não sabe quem é o líder!
-     */
+    // SECAO 4a: Inicializacao do cliente
     private static void initCliente() {
         servidores.clear();
 
@@ -76,7 +72,7 @@ public class Cliente {
             servidores.add(new InetSocketAddress(ip, porta));
         }
 
-        // Captura porta para respostas assíncronas (GET com WAIT_FOR_RESPONSE)
+        // Captura porta para respostas assincronas (GET com WAIT_FOR_RESPONSE)
         System.out.print("Digite a porta para receber respostas assincronas (ex: 20000): ");
         portaCliente = Integer.parseInt(scanner.nextLine().trim());
         iniciarServidorDeRetorno(portaCliente);
@@ -84,12 +80,7 @@ public class Cliente {
         System.out.println("Cliente inicializado com " + servidores.size() + " servidores.");
     }
 
-    /*
-     * SEÇÃO 4b: PUT
-     * - Captura key/value do teclado, escolhe servidor aleatório
-     * - Envia PUT (TCP) para qualquer servidor
-     * - Espera mensagem PUT_OK com timestamp (4b, 5c)
-     */
+    // SECAO 4b: PUT
     private static void put() {
         if (servidores.isEmpty()) {
             System.out.println("Erro: Cliente nao inicializado (use opcao INIT primeiro).");
@@ -100,16 +91,14 @@ public class Cliente {
         System.out.print("Digite o valor (value): ");
         String value = scanner.nextLine().trim();
 
-        // Escolhe servidor aleatório (não sabe quem é o líder)
         InetSocketAddress servidor = escolherServidorAleatorio();
         Mensagem msg = new Mensagem("PUT", key, value, 0, null, 0);
 
-        // Envia via TCP (item 4b, Observações)
         Mensagem resposta = enviarMensagem(servidor, msg);
         if (resposta != null && "PUT_OK".equals(resposta.getTipo())) {
             // Atualiza timestamp local
             timestamps.put(key, resposta.getTimestamp());
-            // Print exato do enunciado!
+            // Print conforme enunciado
             System.out.println("PUT_OK key: " + key +
                     " value " + value +
                     " timestamp " + resposta.getTimestamp() +
@@ -119,13 +108,7 @@ public class Cliente {
         }
     }
 
-    /*
-     * SEÇÃO 4c: GET
-     * - Captura key do teclado
-     * - Envia GET (TCP) para servidor aleatório
-     * - Envia key, timestamp local e info do cliente (4c)
-     * - Se não tiver key atualizada, cliente recebe WAIT_FOR_RESPONSE e recebe value depois, assíncrono
-     */
+    // SECAO 4c: GET
     private static void get() {
         if (servidores.isEmpty()) {
             System.out.println("Erro: Cliente nao inicializado (use opcao INIT primeiro).");
@@ -133,7 +116,6 @@ public class Cliente {
         }
         System.out.print("Digite a chave (key) a ser buscada: ");
         String key = scanner.nextLine().trim();
-        // Timestamp local (não vem do teclado!)
         long tsCliente = timestamps.getOrDefault(key, 0L);
 
         InetSocketAddress servidor = escolherServidorAleatorio();
@@ -145,11 +127,11 @@ public class Cliente {
 
             if (resposta != null) {
                 if ("WAIT_FOR_RESPONSE".equals(resposta.getTipo())) {
-                    // Print exato do enunciado!
+                    // Print conforme enunciado
                     System.out.println("GET key: " + key + " WAIT_FOR_RESPONSE do servidor " +
                             servidor.getAddress().getHostAddress() + ":" + servidor.getPort());
                 } else if ("GET_OK".equals(resposta.getTipo())) {
-                    // Print exato do enunciado!
+                    // Print conforme enunciado
                     System.out.println("GET key: " + key +
                             " value: " + resposta.getValue() +
                             " obtido do servidor " + servidor.getAddress().getHostAddress() + ":" + servidor.getPort() +
@@ -164,16 +146,12 @@ public class Cliente {
         }
     }
 
-    /*
-     * Escolhe servidor aleatório para qualquer operação (4b, 4c)
-     */
+    // Escolhe servidor aleatorio para qualquer operacao (4b, 4c)
     private static InetSocketAddress escolherServidorAleatorio() {
         return servidores.get(random.nextInt(servidores.size()));
     }
 
-    /*
-     * Envia mensagem via TCP, recebe resposta — obrigatoriedade de TCP (Observações 4)
-     */
+    // Envia mensagem via TCP, recebe resposta — obrigatoriedade de TCP
     private static Mensagem enviarMensagem(InetSocketAddress servidor, Mensagem mensagem) {
         try (Socket socket = new Socket(servidor.getAddress(), servidor.getPort());
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
@@ -191,18 +169,13 @@ public class Cliente {
         }
     }
 
-    /*
-     * Listener assíncrono para respostas GET_OK futuras (quando recebeu WAIT_FOR_RESPONSE)
-     * (4c, segunda parte)
-     */
+    // Listener assincrono para respostas GET_OK futuras (quando recebeu WAIT_FOR_RESPONSE)
     private static void iniciarServidorDeRetorno(int porta) {
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(porta)) {
-                System.out.println("[DEBUG CLIENTE] Servidor de retorno escutando na porta " + porta + "...");
+                System.out.println("Servidor de retorno escutando na porta " + porta + "...");
                 while (true) {
-                    System.out.println("[DEBUG CLIENTE] Aguardando resposta assincrona...");
                     Socket socket = serverSocket.accept();
-                    System.out.println("[DEBUG CLIENTE] Conexao assincrona recebida de " + socket.getInetAddress() + ":" + socket.getPort());
                     new Thread(() -> {
                         try (
                             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
@@ -210,6 +183,7 @@ public class Cliente {
                             String respostaJson = in.readLine();
                             Mensagem resposta = gson.fromJson(respostaJson, Mensagem.class);
 
+                            // Print conforme enunciado
                             System.out.println("GET key: " + resposta.getKey() +
                                     " value: " + resposta.getValue() +
                                     " obtido do servidor [assincrono], meu timestamp " +

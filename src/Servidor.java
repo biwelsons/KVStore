@@ -246,7 +246,7 @@ public static void main(String[] args) {
                     // Responde WAIT_FOR_RESPONSE imediatamente
                     synchronized (getsPendentes) {
                         getsPendentes.computeIfAbsent(key, k -> new ArrayList<>()).add(
-                            new Mensagem(msg.getTipo(), key, null, tsCliente, msg.getIpCliente(), msg.getPortaCliente())
+                            new Mensagem(msg.getTipo(), key, null, tsCliente, ipCliente, portaCliente)
                         );
                     }
                     out.println(gson.toJson(new Mensagem("WAIT_FOR_RESPONSE", key, null, 0, null, 0)));
