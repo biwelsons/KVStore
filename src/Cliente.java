@@ -23,8 +23,6 @@ public class Cliente {
 
     public static void main(String[] args) throws UnsupportedEncodingException {
         while (true) {
-            // Garante UTF-8 no terminal (opcional)
-            System.setOut(new PrintStream(System.out, true, "UTF-8"));
 
             // Menu interativo obrigatorio — 4a (apenas INIT, PUT, GET)
             System.out.println("\nEscolha uma opcao:");
