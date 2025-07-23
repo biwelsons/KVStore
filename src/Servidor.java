@@ -246,7 +246,7 @@ public static void main(String[] args) {
                     // Responde WAIT_FOR_RESPONSE imediatamente
                     synchronized (getsPendentes) {
                         getsPendentes.computeIfAbsent(key, k -> new ArrayList<>()).add(
-                            new Mensagem(msg.getTipo(), key, null, tsCliente, ipCliente, portaCliente)
+                            new Mensagem(msg.getTipo(), key, null, tsCliente, msg.getIpCliente(), msg.getPortaCliente())
                         );
                     }
                     out.println(gson.toJson(new Mensagem("WAIT_FOR_RESPONSE", key, null, 0, null, 0)));
@@ -313,8 +313,6 @@ public static void main(String[] args) {
 
             if (pendentes != null) {
                 for (Mensagem pendente : pendentes) {
-                    System.out.println("[DEBUG SERVIDOR] Tentando resposta assincrona para " +
-                        pendente.getIpCliente() + ":" + pendente.getPortaCliente());
                     try (
                         Socket socket = new Socket(pendente.getIpCliente(), pendente.getPortaCliente());
                         PrintWriter out = new PrintWriter(socket.getOutputStream(), true)
