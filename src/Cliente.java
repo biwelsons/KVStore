@@ -5,7 +5,7 @@ import java.util.*;
 
 /*
  * Projeto SD: ClienteX — Key-Value Store Distribuído
- * Funcionalidades implementadas conforme SEÇÃO 4 do enunciado.
+ * Funcionalidades conforme SEÇÃO 4 do enunciado.
  */
 public class Cliente {
     private static final Scanner scanner = new Scanner(System.in);
@@ -57,13 +57,25 @@ public class Cliente {
      */
     private static void initCliente() {
         servidores.clear();
+
+        System.out.print("Os servidores estao na mesma maquina (127.0.0.1)? (s/n): ");
+        boolean mesmaMaquina = scanner.nextLine().trim().equalsIgnoreCase("s");
         for (int i = 1; i <= 3; i++) {
-            System.out.print("Digite o IP do servidor " + i + ": ");
-            String ip = scanner.nextLine().trim();
-            System.out.print("Digite a porta do servidor " + i + ": ");
-            int porta = Integer.parseInt(scanner.nextLine().trim());
+            String ip;
+            int porta;
+            if (mesmaMaquina) {
+                ip = "127.0.0.1";
+                System.out.print("Digite a porta do servidor " + i + ": ");
+                porta = Integer.parseInt(scanner.nextLine().trim());
+            } else {
+                System.out.print("Digite o IP do servidor " + i + ": ");
+                ip = scanner.nextLine().trim();
+                System.out.print("Digite a porta do servidor " + i + ": ");
+                porta = Integer.parseInt(scanner.nextLine().trim());
+            }
             servidores.add(new InetSocketAddress(ip, porta));
         }
+
         // Captura porta para respostas assíncronas (GET com WAIT_FOR_RESPONSE)
         System.out.print("Digite a porta para receber respostas assincronas (ex: 20000): ");
         portaCliente = Integer.parseInt(scanner.nextLine().trim());
@@ -186,9 +198,11 @@ public class Cliente {
     private static void iniciarServidorDeRetorno(int porta) {
         new Thread(() -> {
             try (ServerSocket serverSocket = new ServerSocket(porta)) {
-                System.out.println("Servidor de retorno escutando na porta " + porta + "...");
+                System.out.println("[DEBUG CLIENTE] Servidor de retorno escutando na porta " + porta + "...");
                 while (true) {
+                    System.out.println("[DEBUG CLIENTE] Aguardando resposta assincrona...");
                     Socket socket = serverSocket.accept();
+                    System.out.println("[DEBUG CLIENTE] Conexao assincrona recebida de " + socket.getInetAddress() + ":" + socket.getPort());
                     new Thread(() -> {
                         try (
                             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))
@@ -196,7 +210,6 @@ public class Cliente {
                             String respostaJson = in.readLine();
                             Mensagem resposta = gson.fromJson(respostaJson, Mensagem.class);
 
-                            // Print exato do enunciado para resposta assíncrona
                             System.out.println("GET key: " + resposta.getKey() +
                                     " value: " + resposta.getValue() +
                                     " obtido do servidor [assincrono], meu timestamp " +
